@@ -45,10 +45,13 @@ module.exports = function (RED) {
 
                 //Setup the angular parameters
                 initController: function ($scope, events) {
+                    $scope.countInterval = undefined;
+
                     //Delete the generated elements
                     var deleteElement = function () {
                         try {
                             document.getElementById("are-you-sure-dialog").remove();
+                            clearInterval($scope.countInterval);
                         } catch (e) { }
                     }
 
@@ -57,6 +60,7 @@ module.exports = function (RED) {
                         console.log(msg);
 
                         if (!msg) { return; }
+                        if (msg.length > 0) { return; }
                         deleteElement();
 
                         //Add our element
@@ -80,8 +84,8 @@ module.exports = function (RED) {
                             <h1 style="font-size: 10vw; margin: 0; color: yellow"><i class="${msg.config.icon}"></i></h1>
                             <h1 style="color: ${msg.config.textColor}">${msg.config.title}</h1>
                             <h2 style="color: ${msg.config.textColor}">${msg.config.desc}</h2>
-                            <p style="color: ${msg.config.textColor}">Will automatically select no in ${msg.config.timeoutSec} seconds</p>
-                            <div style="height: 3vh"></div>
+                            <p style="color: ${msg.config.textColor}">Will automatically select no in <strong id='areYouSureCountdownSec'>${msg.config.timeoutSec}</strong> seconds</p>
+                            <div style="height: 3vh"></div
                         `;
 
                         var buttonStyle = String.raw`
@@ -92,15 +96,27 @@ module.exports = function (RED) {
                         var yesButton = document.createElement("button");
                         yesButton.style.cssText = buttonStyle;
                         yesButton.innerHTML = "Yes";
-                        yesButton.onclick = function(){$scope.send([msg, undefined]); deleteElement();};
+                        yesButton.onclick = function () { $scope.send([msg, undefined]); deleteElement(); };
                         var noButton = document.createElement("button");
                         noButton.style.cssText = buttonStyle;
                         noButton.innerHTML = "No";
-                        noButton.onclick = function(){$scope.send([undefined, msg]); deleteElement();};
+                        noButton.onclick = function () { $scope.send([undefined, msg]); deleteElement(); };
 
                         div.appendChild(yesButton);
                         div.appendChild(noButton);
                         body.appendChild(div);
+
+                        //Handle countdown
+                        $scope.countInterval = setInterval(function () {
+                            var count = parseInt(document.getElementById("areYouSureCountdownSec").innerHTML);
+                            document.getElementById("areYouSureCountdownSec").innerHTML = count - 1;
+                            if (count <= 0) {
+                                $scope.send([undefined, msg]);
+                                deleteElement();
+                            }
+                        }, 1000);
+
+                        //Show dialog
                         document.getElementById("are-you-sure-dialog").style.display = "block";
                         setTimeout(function () { document.getElementById("are-you-sure-dialog").style.opacity = 1; }, 100);
                     });
