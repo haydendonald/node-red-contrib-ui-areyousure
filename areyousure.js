@@ -14,51 +14,6 @@
  * limitations under the License.
  **/
 module.exports = function (RED) {
-
-    // var HTML = String.raw`<div style="width: 100%; height: 100%; opacity: 0; display: none; transition: opacity 0.5s;">`;
-
-    // var optionButtonCSS = String.raw`
-    //     width: 100%;
-    //     padding: 0;
-    //     margin: 0;
-    //     margin-top: 2.5px;
-    //     margin-bottom: 2.5px;
-    // `;
-
-    // //Add a button to the HTML
-    // var addButton = function (value) {
-    //     HTML += String.raw`
-    //         <md-button 
-    //             style='${optionButtonCSS} ${config.offClass == "" ? "background-color:" + value.offColor : ""}'
-    //             ${config.offClass != "" ? "class=" + config.offClass : ""}
-    //             ng-click="buttonClicked('${value.value}')"
-    //             value="${value.value}" 
-    //             oncolor="${value.onColor}" 
-    //             offcolor="${value.offColor}" 
-    //             onclass="${config.onClass || "disabled"}" 
-    //             offclass="${config.offClass || "disabled"}">${value.label}
-    //         </md-button>
-    //     `;
-    // }
-
-    // HTML += String.raw`<div>`;
-
-    // //Add the buttons for the values
-    // var j = 0;
-    // for (var i = 0; i < config.options.length; i++) {
-    //     //If we go outside our height bounds move over to the next column
-    //     if (j >= parseInt(config.height)) {
-    //         HTML += String.raw`</div><div>`;
-    //         j = 0;
-    //     }
-    //     addButton(config.options[i]);
-    //     j++;
-    // }
-
-    // HTML += "</div></div>";
-    // return HTML;
-
-
     var ui = undefined;
     function AreYouSure(config) {
         try {
@@ -74,7 +29,7 @@ module.exports = function (RED) {
                 templateScope: "local",
                 emitOnlyNewValues: false,
                 forwardInputMessages: false,
-                storeFrontEndInputAsState: false,
+                storeFrontEndInputAsState: true,
                 group: config.group,
                 order: 0,
                 width: 0,
@@ -82,8 +37,6 @@ module.exports = function (RED) {
                 convertBack: function (value) {
                     return value;
                 },
-
-                //When the click function is called
                 beforeSend: function (msg, orig) {
                     if (orig) {
                         return orig.msg;
@@ -92,81 +45,71 @@ module.exports = function (RED) {
 
                 //Setup the angular parameters
                 initController: function ($scope, events) {
-                    //When a button is clicked
-                    $scope.buttonClicked = function (value) {
-                        $scope.send([{ payload: value }, undefined]);
+                    //Delete the generated elements
+                    var deleteElement = function () {
+                        try {
+                            document.getElementById("are-you-sure-dialog").remove();
+                        } catch (e) { }
                     }
 
                     //When a message comes on the input and is sent from before emit
                     $scope.$watch("msg", function (msg) {
-                        if (!msg) { return; }
+                        console.log(msg);
 
-                        document.getElementById(id).style.display = "block";
-                        setTimeout(function(){document.getElementById(id).style.opacity = 1;}, 100);
+                        if (!msg) { return; }
+                        deleteElement();
+
+                        //Add our element
+                        var body = document.getElementsByTagName("body")[0];
+                        var div = document.createElement("div");
+                        var divStyle = String.raw`
+                            z-index: 5;
+                            width: 100vw;
+                            height: 100vh;
+                            top: 0;
+                            left: 0;
+                            background-color: ${msg.config.backgroundColor};
+                            color: white;
+                            display: none;
+                            opacity: 0;
+                            transition: opacity 0.5s;
+                        `;
+                        div.id = "are-you-sure-dialog";
+                        div.style = divStyle;
+                        div.innerHTML = String.raw`
+                            <h1 style="font-size: 10vw; margin: 0; color: yellow"><i class="${msg.config.icon}"></i></h1>
+                            <h1 style="color: ${msg.config.textColor}">${msg.config.title}</h1>
+                            <h2 style="color: ${msg.config.textColor}">${msg.config.desc}</h2>
+                            <p style="color: ${msg.config.textColor}">Will automatically select no in ${msg.config.timeoutSec} seconds</p>
+                            <div style="height: 3vh"></div>
+                        `;
+
+                        var buttonStyle = String.raw`
+                            width: 30vw;
+                            height: 15vh;
+                        `;
+
+                        var yesButton = document.createElement("button");
+                        yesButton.style.cssText = buttonStyle;
+                        yesButton.innerHTML = "Yes";
+                        yesButton.onclick = function(){$scope.send([msg, undefined]); deleteElement();};
+                        var noButton = document.createElement("button");
+                        noButton.style.cssText = buttonStyle;
+                        noButton.innerHTML = "No";
+                        noButton.onclick = function(){$scope.send([undefined, msg]); deleteElement();};
+
+                        div.appendChild(yesButton);
+                        div.appendChild(noButton);
+                        body.appendChild(div);
+                        document.getElementById("are-you-sure-dialog").style.display = "block";
+                        setTimeout(function () { document.getElementById("are-you-sure-dialog").style.opacity = 1; }, 100);
                     });
 
-
-                    //Clean up any old elements
-                    try {
-                        document.getElementById(id).remove();
-                    } catch (e) { }
-
-
-                    var iconColor = "orange";
-                    var textColor = "white";
-                    var backgroundColor = "black";
-
-                    var icon = "fa fa-exclamation-triangle";
-                    var title = "Are yuuou surre";
-                    var desc = "yolo";
-
-                    var timeoutSec = 10;
-
-                    //Add our element
-                    var body = document.getElementsByTagName("body")[0];
-                    var div = document.createElement("div");
-
-                    var divStyle = String.raw`
-                        z-index: 5;
-                        width: 100vw;
-                        height: 100vh;
-                        top: 0;
-                        left: 0;
-                        background-color: ${backgroundColor};
-                        color: white;
-                        display: none;
-                        opacity: 0;
-                        transition: opacity 0.5s;
-                    `;
-
-                    div.id = id;
-                    div.style = divStyle;
-
-                    var buttonStyle = String.raw`
-                        width: 30vw;
-                        height: 15vh;
-                    `;
-
-                    div.innerHTML = String.raw`
-                        <center>
-                            <h1 style="font-size: 10vw; margin: 0; color: yellow"><i class="${icon}"></i></h1>
-                            <h1 style="color: ${textColor}">${title}</h1>
-                            <h2 style="color: ${textColor}">${desc}</h2>
-                            <p style="color: ${textColor}">Will automatically select no in ${timeoutSec} seconds</p>
-                            <div style="height: 3vh"></div>
-                            <button style="${buttonStyle}" ng-click="click()">Yes</button>
-                            <button style="${buttonStyle}">No</button>
-                        </center>
-                    `;
-                    body.appendChild(div);
-
-                    $scope.click = function() {
-                        console.log("HI");
-                    }
+                    deleteElement();
                 },
 
-                //When a message is on the input
                 beforeEmit: function (msg, value) {
+                    msg.config = config;
                     return { msg };
                 }
             });
