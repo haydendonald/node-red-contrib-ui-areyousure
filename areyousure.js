@@ -61,6 +61,16 @@ module.exports = function (RED) {
 
                         if (!msg) { return; }
                         if (msg.length > 0) { return; }
+
+                        if (!msg.options) { msg.options = {}; }
+                        var icon = msg.options.icon || msg.config.icon || "fa fa-exclamation-triangle";
+                        var title = msg.options.title || msg.config.title || "Are You Sure?";
+                        var description = msg.options.description || msg.config.description || "Are you sure you want to perform this action?";
+                        var timeoutSec = parseInt(msg.options.timeoutSec) || parseInt(msg.config.timeoutSec) || 10;
+                        var iconColor = msg.options.iconColor || msg.config.iconColor || "orange";
+                        var textColor = msg.options.textColor || msg.config.textColor || "white";
+                        var backgroundColor = msg.options.backgroundColor || msg.config.backgroundColor || "black";
+                        
                         deleteElement();
 
                         //Add our element
@@ -72,7 +82,7 @@ module.exports = function (RED) {
                             height: 100vh;
                             top: 0;
                             left: 0;
-                            background-color: ${msg.config.backgroundColor};
+                            background-color: ${backgroundColor};
                             color: white;
                             display: none;
                             opacity: 0;
@@ -81,10 +91,10 @@ module.exports = function (RED) {
                         div.id = "are-you-sure-dialog";
                         div.style = divStyle;
                         div.innerHTML = String.raw`
-                            <h1 style="font-size: 10vw; margin: 0; color: yellow"><i class="${msg.config.icon}"></i></h1>
-                            <h1 style="color: ${msg.config.textColor}">${msg.config.title}</h1>
-                            <h2 style="color: ${msg.config.textColor}">${msg.config.desc}</h2>
-                            <p style="color: ${msg.config.textColor}">Will automatically select no in <strong id='areYouSureCountdownSec'>${msg.config.timeoutSec}</strong> seconds</p>
+                            <h1 style="font-size: 10vw; margin: 0; color: ${iconColor}"><i class="${icon}"></i></h1>
+                            <h1 style="color: ${textColor}">${title}</h1>
+                            <h2 style="color: ${textColor}">${description}</h2>
+                            <p style="color: ${textColor}">Will automatically select no in <strong id='areYouSureCountdownSec'>${timeoutSec}</strong> seconds</p>
                             <div style="height: 3vh"></div
                         `;
 
