@@ -57,8 +57,6 @@ module.exports = function (RED) {
 
                     //When a message comes on the input and is sent from before emit
                     $scope.$watch("msg", function (msg) {
-                        console.log(msg);
-
                         if (!msg) { return; }
                         if (msg.length > 0) { return; }
 
@@ -70,13 +68,14 @@ module.exports = function (RED) {
                         var iconColor = msg.options.iconColor || msg.config.iconColor || "orange";
                         var textColor = msg.options.textColor || msg.config.textColor || "white";
                         var backgroundColor = msg.options.backgroundColor || msg.config.backgroundColor || "black";
-                        
+
                         deleteElement();
 
                         //Add our element
                         var body = document.getElementsByTagName("body")[0];
                         var div = document.createElement("div");
-                        var divStyle = String.raw`
+                        div.id = "are-you-sure-dialog";
+                        div.style = String.raw`
                             z-index: 5;
                             width: 100vw;
                             height: 100vh;
@@ -88,32 +87,35 @@ module.exports = function (RED) {
                             opacity: 0;
                             transition: opacity 0.5s;
                         `;
-                        div.id = "are-you-sure-dialog";
-                        div.style = divStyle;
-                        div.innerHTML = String.raw`
-                            <h1 style="font-size: 10vw; margin: 0; color: ${iconColor}"><i class="${icon}"></i></h1>
+
+                        var center = document.createElement("center");
+                        center.innerHTML = String.raw`
+                            <h1 style="font-size: 5vw; margin: 0; color: ${iconColor}"><i class="${icon}"></i></h1>
                             <h1 style="color: ${textColor}">${title}</h1>
                             <h2 style="color: ${textColor}">${description}</h2>
                             <p style="color: ${textColor}">Will automatically select no in <strong id='areYouSureCountdownSec'>${timeoutSec}</strong> seconds</p>
-                            <div style="height: 3vh"></div
+                            <div style="height: 3vh"></div>
                         `;
 
                         var buttonStyle = String.raw`
                             width: 30vw;
+                            margin: 10px;
                             height: 15vh;
+                            font-size: 1.2em;
                         `;
 
                         var yesButton = document.createElement("button");
                         yesButton.style.cssText = buttonStyle;
-                        yesButton.innerHTML = "Yes";
+                        yesButton.innerHTML = "<i class='fa fa-check' style='color: green'></i> Yes";
                         yesButton.onclick = function () { $scope.send([msg, undefined]); deleteElement(); };
                         var noButton = document.createElement("button");
                         noButton.style.cssText = buttonStyle;
-                        noButton.innerHTML = "No";
+                        noButton.innerHTML = "<i class='fa fa-times' style='color: red'></i> No";
                         noButton.onclick = function () { $scope.send([undefined, msg]); deleteElement(); };
 
-                        div.appendChild(yesButton);
-                        div.appendChild(noButton);
+                        center.appendChild(yesButton);
+                        center.appendChild(noButton);
+                        div.appendChild(center);
                         body.appendChild(div);
 
                         //Handle countdown
