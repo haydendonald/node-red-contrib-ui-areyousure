@@ -1,6 +1,6 @@
 {
     "name": "node-red-contrib-ui-areyousure",
-    "version": "0.0.1",
+    "version": "0.1.0",
     "description": "A simple NodeRED dashboard node that opens a full screen popup to check if the user wants to perform an action",
     "author": "Hayden Donald",
     "license": "Apache",
