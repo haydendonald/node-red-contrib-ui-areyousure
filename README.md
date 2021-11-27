@@ -1,8 +1,11 @@
 # Are You Sure? UI Widget for the NodeRed Dashboard
 This is a simple NodeRED dashboard node that displays a full screen prompt asking the user if they wish to proceed with the action. It works by passing a message to the input which opens the dialog, if the user clicks yes it will pass to the yes output or like wise no for a no response.
 
-## Example interface
+## Default interface
 ![Example](./img/example.png)
+
+## Custom interface
+![Example](./img/example2.png)
 
 # Sending to input
 To open the dialog send any message. If the response is "yes" it will output to the "yes" output, if no it will output to the "no" output. Additionally one can add the following to override the node properties:

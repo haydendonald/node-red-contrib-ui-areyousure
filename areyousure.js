@@ -23,6 +23,7 @@ module.exports = function (RED) {
             }
 
             RED.nodes.createNode(this, config);
+
             var done = ui.addWidget({
                 node: node,
                 format: "",
@@ -45,7 +46,7 @@ module.exports = function (RED) {
 
                 //Setup the angular parameters
                 initController: function ($scope, events) {
-                    $scope.countInterval = undefined;
+                    clearInterval($scope.countInterval);
 
                     //Delete the generated elements
                     var deleteElement = function () {
@@ -120,6 +121,7 @@ module.exports = function (RED) {
 
                         //Handle countdown
                         $scope.countInterval = setInterval(function () {
+                            console.log(this);
                             var count = parseInt(document.getElementById("areYouSureCountdownSec").innerHTML);
                             document.getElementById("areYouSureCountdownSec").innerHTML = count - 1;
                             if (count <= 0) {
